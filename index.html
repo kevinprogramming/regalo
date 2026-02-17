@@ -3,9 +3,6 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="robots" content="noindex, nofollow, noarchive">
-  <meta name="googlebot" content="noindex, nofollow, noarchive">
-
   <title>Felicidades Amoree</title>
   <meta name="color-scheme" content="dark light" />
   <style>
@@ -355,15 +352,16 @@
       <div class="ctaRow">
         <button class="btn primary" id="openLetterBtn">Abrir carta</button>
         <button class="btn ghost" id="openGiftBtn">Ver el regalo</button>
-        <button class="btn ghost small" id="toggleMusicBtn" style="display:none;">▶ Música</button>
       </div>
     </section>
 
     <div class="grid">
       <!-- Letter -->
-      <section class="paper fadeUp" id="letterCard">
-        <div class="cardInner">
-          <h2 class="cardTitle">Carta</h2>
+      <details class="paper fadeUp" id="letterCard">
+        <summary class="cardInner" style="cursor:pointer;list-style:none;padding-bottom:0;">
+          <h2 class="cardTitle" style="margin-bottom:0;">Carta</h2>
+        </summary>
+        <div class="cardInner" style="padding-top:12px;">
           <div class="muted" style="font-size:13px;text-transform:uppercase;letter-spacing:.18em;">
             escrita para hoy
           </div>
@@ -400,7 +398,7 @@
             </div>
           </div>
         </div>
-      </section>
+      </details>
 
       <!-- Right column: Stats + Gallery -->
       <section class="card fadeUp" id="rightCard">
@@ -552,9 +550,18 @@
     $("closeGift").onclick = closeGift;
     $("giftModal").onclick = (e)=>{ if(e.target === $("giftModal")) closeGift(); };
 
-    // “Abrir carta” just scroll nicely
-    $("openLetterBtn").onclick = ()=> {
+    // Mantiene una referencia al audio para usarlo desde "Abrir carta"
+    const audio = $("audio");
+
+    // “Abrir carta” abre el desplegable, hace scroll y reproduce audio
+    $("openLetterBtn").onclick = async ()=> {
+      $("letterCard").open = true;
       $("letterCard").scrollIntoView({ behavior:"smooth", block:"start" });
+      try{
+        await audio.play();
+      }catch{
+        // Si el navegador bloquea el audio, no interrumpimos la experiencia.
+      }
     };
 
     // Random line
@@ -586,33 +593,6 @@
     document.querySelectorAll(".fadeUp").forEach(el=>io.observe(el));
     window.addEventListener("load", ()=>document.querySelectorAll(".fadeUp").forEach(el=>el.classList.add("in")));
 
-    // Optional audio
-    const audio = $("audio");
-    const btn = $("toggleMusicBtn");
-    async function tryEnableAudio(){
-      if(!CONFIG.enableAudioIfExists) return;
-      // Si no existe el archivo, ocultamos botón cuando falle al intentar cargar
-      audio.addEventListener("error", ()=>btn.style.display="none");
-      // mostramos botón por defecto; si el archivo no está, se ocultará
-      btn.style.display = "inline-block";
-    }
-    tryEnableAudio();
-
-    btn.onclick = async ()=>{
-      try{
-        if(audio.paused){
-          await audio.play();
-          btn.textContent = "⏸ Pausar música";
-        }else{
-          audio.pause();
-          btn.textContent = "▶ Música";
-        }
-      }catch{
-        // iOS suele bloquear hasta interacción; ya es interacción, pero por si acaso:
-        alert("Si no suena, sube el volumen o prueba a pulsar otra vez 😊");
-      }
-    };
   </script>
 </body>
 </html>
-
